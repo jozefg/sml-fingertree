@@ -62,6 +62,9 @@ struct
       end
   fun toList t = toList' t []
 
+  fun tabulate 0 f = EMPTY
+    | tabulate n f = snoc (tabulate (n - 1) f) (f n)
+
   fun map f EMPTY = EMPTY
     | map f (SINGLE a) = SINGLE (nmap f a)
     | map f (DEEP (pf, m, sf)) =

@@ -2,6 +2,7 @@ signature FINGERTREE =
 sig
   type 'a t
 
+  val tabulate : int -> (int -> 'a) -> 'a t
   val fromList : 'a list -> 'a t
   val toList : 'a t -> 'a list
 
