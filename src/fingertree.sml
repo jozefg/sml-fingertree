@@ -1,4 +1,4 @@
-structure FingerTree :> FINGERTREE =
+structure FingerTree : FINGERTREE =
 struct
   datatype 'a node
            = LIFT of 'a
@@ -34,13 +34,21 @@ struct
 
   fun cons a t = cons' (LIFT a) t
 
-  fun snoc' a EMPTY : 'a t = SINGLE a
-    | snoc' a (SINGLE b) = DEEP ([a], Susp.susp (fn () => EMPTY), [b])
-    | snoc' a (DEEP (pf, m, [e, d, c, b])) =
-      DEEP (pf, Susp.susp (fn () => snoc' (NODE3 (e, d, c)) (Susp.view m)), [b, a])
-    | snoc' a (DEEP (pr, m, sf)) = DEEP (pr, m, sf @ [a])
+  fun snoc' EMPTY a = SINGLE a
+    | snoc' (SINGLE b) a = DEEP ([a], Susp.susp (fn () => EMPTY), [b])
+    | snoc' (DEEP (pf, m, [e, d, c, b])) a =
+      DEEP (pf, Susp.susp (fn () => snoc' (Susp.view m) (NODE3 (e, d, c))), [b, a])
+    | snoc' (DEEP (pr, m, sf)) a = DEEP (pr, m, sf @ [a])
 
-  fun snoc t a = snoc' (LIFT a) t
+  fun snoc t a = snoc' t (LIFT a)
+
+  fun ncons (LIFT a) t = cons a t
+    | ncons (NODE2 (a, b)) t = cons' a (cons' b t)
+    | ncons (NODE3 (a, b, c)) t = cons' a (cons' b (cons' c t))
+
+  fun nsnoc (LIFT a) t = snoc t a
+    | nsnoc (NODE2 (a, b)) t = snoc' (snoc' t a) b
+    | nsnoc (NODE3 (a, b, c)) t = snoc' (snoc' (snoc' t a) b) c
 
   fun fromList xs = List.foldr (fn (a, b) => cons a b) EMPTY xs
   fun toList' EMPTY xs = xs
@@ -68,4 +76,42 @@ struct
   fun last EMPTY = NONE
     | last (SINGLE a) = SOME (nlast a)
     | last (DEEP (_, _, sf)) = SOME (nlast (List.last sf))
+
+
+  datatype 'a list_view = NIL | CONS of 'a * 'a t
+  datatype 'a list_view' = NIL' | CONS' of 'a node * 'a t
+
+  fun consView' EMPTY = NIL'
+    | consView' (SINGLE x) = CONS' (x, EMPTY)
+    | consView' (DEEP (p :: pr, m, sf)) =
+      case pr of
+          _ :: _ => CONS' (p, DEEP (pr, m, sf))
+        | [] =>
+          case consView' (Susp.view m) of
+              CONS' (a, t) => CONS' (p, DEEP ([a], Susp.susp (fn () => t), sf))
+            | NIL' => CONS' (p, List.foldl (fn (a, b) => nsnoc a b) EMPTY sf)
+
+  fun snocView' EMPTY = NIL'
+    | snocView' (SINGLE x) = CONS' (x, EMPTY)
+    | snocView' (DEEP (pf, m, sf)) =
+      let
+        val s = List.last sf
+      in
+        case List.take (sf, List.length sf - 1) of
+            _ :: _ => CONS' (s, DEEP (pf, m, sf))
+          | [] =>
+            case snocView' (Susp.view m) of
+                CONS' (a, t) => CONS' (s, DEEP (pf, Susp.susp (fn () => t), [a]))
+              | NIL' => CONS' (s, List.foldl (fn (a, b) => ncons a b) EMPTY pf)
+      end
+
+  fun consView t =
+      case consView' t of
+          CONS' (LIFT a, t) => CONS (a, t)
+        | NIL' => NIL
+
+  fun snocView t =
+      case snocView' t of
+          CONS' (LIFT a, t) => CONS (a, t)
+        | NIL' => NIL
 end
