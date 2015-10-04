@@ -35,7 +35,7 @@ struct
   fun cons a t = cons' (LIFT a) t
 
   fun snoc' EMPTY a = SINGLE a
-    | snoc' (SINGLE b) a = DEEP ([a], Susp.susp (fn () => EMPTY), [b])
+    | snoc' (SINGLE b) a = DEEP ([b], Susp.susp (fn () => EMPTY), [a])
     | snoc' (DEEP (pf, m, [e, d, c, b])) a =
       DEEP (pf, Susp.susp (fn () => snoc' (Susp.view m) (NODE3 (e, d, c))), [b, a])
     | snoc' (DEEP (pr, m, sf)) a = DEEP (pr, m, sf @ [a])
@@ -63,7 +63,7 @@ struct
   fun toList t = toList' t []
 
   fun tabulate 0 f = EMPTY
-    | tabulate n f = snoc (tabulate (n - 1) f) (f n)
+    | tabulate n f = snoc (tabulate (n - 1) f) (f (n - 1))
 
   fun map f EMPTY = EMPTY
     | map f (SINGLE a) = SINGLE (nmap f a)
