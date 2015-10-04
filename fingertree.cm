@@ -1,4 +1,7 @@
-Group is
+Library
+  signature FINGERTREE
+  structure FingerTree
+is
   $/basis.cm
 
   src/susp.sml
