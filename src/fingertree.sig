@@ -12,8 +12,12 @@ sig
 
   val head : 'a t -> 'a option
   val last : 'a t -> 'a option
+  val tail : 'a t -> 'a t option
+  val init : 'a t -> 'a t option
+  val null : 'a t -> bool
 
   datatype 'a list_view = NIL | CONS of 'a * 'a t
   val consView : 'a t -> 'a list_view
   val snocView : 'a t -> 'a list_view
+
 end

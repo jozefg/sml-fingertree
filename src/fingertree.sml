@@ -69,15 +69,6 @@ struct
            , Susp.susp (fn () => map f (Susp.view m))
            , List.map (nmap f) sf)
 
-  fun head EMPTY = NONE
-    | head (SINGLE a) = SOME (nhead a)
-    | head (DEEP (pf, _, _)) = SOME (nhead (List.hd pf))
-
-  fun last EMPTY = NONE
-    | last (SINGLE a) = SOME (nlast a)
-    | last (DEEP (_, _, sf)) = SOME (nlast (List.last sf))
-
-
   datatype 'a list_view = NIL | CONS of 'a * 'a t
   datatype 'a list_view' = NIL' | CONS' of 'a node * 'a t
 
@@ -114,4 +105,27 @@ struct
       case snocView' t of
           CONS' (LIFT a, t) => CONS (a, t)
         | NIL' => NIL
+
+  fun head EMPTY = NONE
+    | head (SINGLE a) = SOME (nhead a)
+    | head (DEEP (pf, _, _)) = SOME (nhead (List.hd pf))
+
+  fun last EMPTY = NONE
+    | last (SINGLE a) = SOME (nlast a)
+    | last (DEEP (_, _, sf)) = SOME (nlast (List.last sf))
+
+  fun tail t =
+      case consView t of
+          CONS (_, t') => SOME t'
+        | NIL => NONE
+
+  fun init t =
+      case snocView t of
+          CONS (_, t') => SOME t'
+        | NIL => NONE
+
+  fun null t =
+      case consView t of
+          NIL => true
+        | _ => false
 end
