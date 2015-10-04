@@ -20,4 +20,5 @@ sig
   val consView : 'a t -> 'a list_view
   val snocView : 'a t -> 'a list_view
 
+  val >< : 'a t * 'a t -> 'a t
 end

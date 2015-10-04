@@ -128,4 +128,21 @@ struct
       case consView t of
           NIL => true
         | _ => false
+
+  fun nodes [a, b] = [NODE2 (a, b)]
+    | nodes [a, b, c] = [NODE3 (a, b, c)]
+    | nodes [a, b, c, d] = [NODE2 (a, b), NODE2 (c, d)]
+    | nodes (a :: b :: c :: xs) = NODE3 (a, b, c) :: nodes xs
+
+  fun joinWith EMPTY xs t2 = List.foldl (fn (a, b) => ncons a b) t2 xs
+    | joinWith t1 xs EMPTY = List.foldl (fn (a, b) => nsnoc a b) t1 xs
+    | joinWith (SINGLE a) xs t2 = ncons a (List.foldl (fn (a, b) => ncons a b) t2 xs)
+    | joinWith t1 xs (SINGLE a) = nsnoc a (List.foldl (fn (a, b) => nsnoc a b) t1 xs)
+    | joinWith (DEEP (pf1, m1, sf1)) xs (DEEP (pf2, m2, sf2)) =
+      DEEP (pf1,
+            Susp.susp (fn () =>
+              joinWith (Susp.view m1) (nodes (sf1 @ xs @ pf2)) (Susp.view m2)),
+            sf2)
+
+  fun >< (t1, t2) = joinWith t1 [] t2
 end
