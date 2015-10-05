@@ -1,5 +1,6 @@
 structure FingerTree : FINGERTREE =
 struct
+  exception Precondition of string
   datatype 'a node
            = LIFT of 'a
            | NODE2 of 'a node * 'a node
@@ -111,6 +112,7 @@ struct
   and consView' EMPTY = NIL'
     | consView' (SINGLE x) = CONS' (x, EMPTY)
     | consView' (DEEP (_, p :: pr, m, sf)) = CONS' (p, deepl pr m sf)
+    | consView' _ = raise Precondition "consView'"
 
   fun deepr pf m sf =
       case sf of
@@ -132,11 +134,13 @@ struct
       case consView' t of
           CONS' (LIFT a, t) => CONS (a, t)
         | NIL' => NIL
+        | _ => raise Precondition "consView"
 
   fun snocView t =
       case snocView' t of
           CONS' (LIFT a, t) => CONS (a, t)
         | NIL' => NIL
+        | _ => raise Precondition "snocView"
 
   fun head EMPTY = NONE
     | head (SINGLE a) = SOME (nhead a)
@@ -165,6 +169,7 @@ struct
     | nodes [a, b, c] = [NODE3 (a, b, c)]
     | nodes [a, b, c, d] = [NODE2 (a, b), NODE2 (c, d)]
     | nodes (a :: b :: c :: xs) = NODE3 (a, b, c) :: nodes xs
+    | nodes _ = raise Precondition "nodes"
 
   fun joinWith EMPTY xs t2 = List.foldl (fn (a, b) => ncons a b) t2 xs
     | joinWith t1 xs EMPTY = List.foldl (fn (a, b) => nsnoc a b) t1 xs
@@ -193,6 +198,7 @@ struct
             (x :: ls, m, rs)
           end
       end
+    | splitDigit _ _ _ = raise Precondition "splitDigit"
 
   fun split' p i (SINGLE a) = (EMPTY, a, EMPTY)
     | split' p i (DEEP (v, pf, m, sf)) =
@@ -222,6 +228,7 @@ struct
               (deepr pf m ls, x, List.foldr (fn (a, b) => ncons a b) EMPTY rs)
             end
       end
+    | split' _ _ _ = raise Precondition "split'"
 
 
   datatype 'a tree_view = NODE of 'a t * 'a * 'a t | LEAF
