@@ -25,6 +25,10 @@ struct
     | nmeasure (NODE2 (a, b)) = nmeasure a + nmeasure b
     | nmeasure (NODE3 (a, b, c)) = nmeasure a + nmeasure b + nmeasure c
 
+  fun nrev (LIFT a) = LIFT a
+    | nrev (NODE2 (a, b)) = NODE2 (nrev b, nrev a)
+    | nrev (NODE3 (a, b, c)) = NODE3 (nrev c, nrev b, nrev a)
+
   fun flatten (LIFT a) = [LIFT a]
     | flatten (NODE2 (a, b)) = [a, b]
     | flatten (NODE3 (a, b, c)) = [a, b, c]
@@ -260,4 +264,12 @@ struct
       | NIL => z
 
   val reduce = foldr
+
+  fun rev EMPTY = EMPTY
+    | rev (SINGLE a) = SINGLE (nrev a)
+    | rev (DEEP (v, pf, m, sf)) =
+      DEEP ( v
+           , List.rev (List.map nrev sf)
+           , Susp.susp (fn () => rev (Susp.view m))
+           , List.rev (List.map nrev pf))
 end

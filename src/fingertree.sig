@@ -25,6 +25,7 @@ sig
   val init : 'a t -> 'a t option
   val null : 'a t -> bool
   val nth  : int -> 'a t -> 'a option
+  val rev  : 'a t -> 'a t
 
   datatype 'a list_view = NIL | CONS of 'a * 'a t
   val consView : 'a t -> 'a list_view
