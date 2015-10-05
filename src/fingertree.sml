@@ -34,6 +34,8 @@ struct
     | SINGLE of 'a node
     | DEEP of int Susp.t * 'a node list * 'a t Susp.t * 'a node list
 
+  val empty = EMPTY
+
   fun size EMPTY = 0
     | size (SINGLE a) = nmeasure a
     | size (DEEP (v, _, _, _)) = Susp.view v
@@ -100,7 +102,7 @@ struct
           _ :: _ => deep (pr, m, sf)
         | [] =>
           case consView' (Susp.view m) of
-              CONS' (a, t) => deep ([a], Susp.susp (fn () => t), sf)
+              CONS' (a, t) => deep (flatten a, Susp.susp (fn () => t), sf)
             | NIL' => List.foldl (fn (a, b) => nsnoc a b) EMPTY sf
   and consView' EMPTY = NIL'
     | consView' (SINGLE x) = CONS' (x, EMPTY)
@@ -112,7 +114,7 @@ struct
             _ :: _ => deep (pf, m, sf)
           | [] =>
             case snocView' (Susp.view m) of
-                CONS' (a, t) => deep (pf, Susp.susp (fn () => t), [a])
+                CONS' (a, t) => deep (pf, Susp.susp (fn () => t), flatten a)
               | NIL' => List.foldl (fn (a, b) => ncons a b) EMPTY pf
   and snocView' EMPTY = NIL'
     | snocView' (SINGLE x) = CONS' (x, EMPTY)
@@ -171,7 +173,8 @@ struct
               joinWith (Susp.view m1) (nodes (sf1 @ xs @ pf2)) (Susp.view m2)),
             sf2)
 
-  fun >< (t1, t2) = joinWith t1 [] t2
+  infixr ><
+  fun t1 >< t2 = joinWith t1 [] t2
 
   fun splitDigit p i [a] = ([], a, [])
     | splitDigit p i (x :: xs) =
@@ -238,4 +241,12 @@ struct
           SOME LEAF => NONE
         | SOME (NODE (_, x, _)) => SOME x
         | NONE => NONE
+
+  fun filter f t =
+    case split t of
+        LEAF => EMPTY
+      | NODE (l, a, r) =>
+        if f a
+        then filter f l >< cons a (filter f r)
+        else filter f l >< filter f r
 end
