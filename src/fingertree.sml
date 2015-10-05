@@ -108,7 +108,6 @@ struct
     | consView' (SINGLE x) = CONS' (x, EMPTY)
     | consView' (DEEP (_, p :: pr, m, sf)) = CONS' (p, deepl pr m sf)
 
-
   fun deepr pf m sf =
       case sf of
             _ :: _ => deep (pf, m, sf)
@@ -249,4 +248,16 @@ struct
         if f a
         then filter f l >< cons a (filter f r)
         else filter f l >< filter f r
+
+  fun foldr f z t =
+    case snocView t of
+        CONS (x, t') => foldr f (f (x, z)) t'
+      | NIL => z
+
+  fun foldl f z t =
+    case consView t of
+        CONS (x, t') => foldr f (f (x, z)) t'
+      | NIL => z
+
+  val reduce = foldr
 end

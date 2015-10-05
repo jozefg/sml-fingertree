@@ -15,6 +15,10 @@ sig
   val map    : ('a -> 'b)   -> 'a t -> 'b t
   val filter : ('a -> bool) -> 'a t -> 'a t
 
+  val foldr  : ('a * 'b -> 'b) -> 'b -> 'a t -> 'b
+  val foldl  : ('a * 'b -> 'b) -> 'b -> 'a t -> 'b
+  val reduce : ('a * 'a -> 'a) -> 'a -> 'a t -> 'a
+
   val head : 'a t -> 'a option
   val last : 'a t -> 'a option
   val tail : 'a t -> 'a t option
