@@ -223,7 +223,7 @@ struct
             end
           | (false, false) =>
             let
-              val (ls, x, rs) = splitDigit p i sf
+              val (ls, x, rs) = splitDigit p (i' + size (Susp.view m)) sf
             in
               (deepr pf m ls, x, List.foldr (fn (a, b) => ncons a b) EMPTY rs)
             end
